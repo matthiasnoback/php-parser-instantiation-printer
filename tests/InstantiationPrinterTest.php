@@ -23,7 +23,11 @@ final class InstantiationPrinterTest extends TestCase
         Node $node
     ): void {
         $code = $this->printer->print($node);
-        $recreatedNode = eval($code);
+        try {
+            $recreatedNode = eval($code);
+        } catch (\Throwable $previous) {
+            throw new \RuntimeException('Could not instantiate the returned code: ' . $code, 0, $previous);
+        }
         self::assertEquals($node, $recreatedNode);
     }
 
@@ -36,6 +40,7 @@ final class InstantiationPrinterTest extends TestCase
             [new Node\Scalar\String_('foo')],
             [new Node\Scalar\DNumber(0.12)],
             [new Node\Scalar\LNumber(123)],
+            [new Node\Expr\Assign(new Node\Expr\Variable('foo'), new Node\Scalar\String_('bar'))]
         ];
     }
 }

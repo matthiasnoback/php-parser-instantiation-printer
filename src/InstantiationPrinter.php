@@ -53,6 +53,10 @@ final class InstantiationPrinter
 
     private function createExpressionNodeForValue($value): Expr
     {
+        if ($value instanceof Node) {
+            return $this->createInstantiationNodeFor($value);
+        }
+
         if (is_string($value)) {
             return new String_($value);
         }

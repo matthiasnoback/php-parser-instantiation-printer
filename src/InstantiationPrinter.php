@@ -76,19 +76,28 @@ final class InstantiationPrinter
         $arguments = [];
 
         foreach ($reflection->getConstructor()->getParameters() as $parameter) {
-            if ($reflection->hasProperty($parameter->getName())) {
+            if ($node instanceof Node\Name && $parameter->getName() === 'name') {
+                /*
+                 * The $name parameter of the Name node is a string that will be split into parts, so we have to turn it
+                 * into a string again:
+                 */
+                $value = $node->toString();
+            } elseif ($parameter->getName() === 'attributes') {
+                // Strip existing nodes from their attributes, which only make sense in the context of parsing the nodes
+                $value = [];
+            } elseif ($reflection->hasProperty($parameter->getName())) {
                 $property = $reflection->getProperty($parameter->getName());
                 $property->setAccessible(true);
 
-
                 $value = $property->getValue($node);
-                if ($parameter->getName() === 'attributes') {
-                    // Strip existing nodes from their attributes, which only make sense in the context of parsing the nodes
-                    $value = [];
-                }
-
-                $arguments[] = new Arg($this->createExpressionNodeForValue($value));
+            } else {
+                throw new RuntimeException(
+                    'Could not come up with an argument for constructor parameter "' . $parameter->getName() . '"' .
+                    ' of class ' . $parameter->getClass()->getName()
+                );
             }
+
+            $arguments[] = new Arg($this->createExpressionNodeForValue($value));
         }
 
         return $arguments;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace InstantiationPrinter;
 
+use Generator;
 use PhpParser\Node;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
@@ -14,14 +15,16 @@ final class InstantiationPrinterTest extends TestCase
 {
     private InstantiationPrinter $printer;
     private Standard $prettyPrinter;
+    private $parser;
 
     protected function setUp(): void
     {
         $parserFactory = new ParserFactory();
         $this->prettyPrinter = new Standard();
 
+        $this->parser = $parserFactory->create(ParserFactory::PREFER_PHP7);
         $this->printer = new InstantiationPrinter(
-            $parserFactory->create(ParserFactory::PREFER_PHP7),
+            $this->parser,
             $this->prettyPrinter
         );
     }
@@ -49,13 +52,11 @@ final class InstantiationPrinterTest extends TestCase
 
     /**
      * @test
+     * @dataProvider fixtureFiles
      */
-    public function it_prints_code_that_instantiates_statements(): void
+    public function it_prints_code_that_instantiates_statements(string $phpFile): void
     {
-        $originalCode = <<<'EOD'
-<?php
-echo 'foo';
-EOD;
+        $originalCode = file_get_contents($phpFile);
 
         $generatedCode = $this->printer->printInstantiationCodeFor($originalCode);
 
@@ -67,7 +68,17 @@ EOD;
 
         $resultingCode = $this->prettyPrinter->prettyPrint($statements);
 
-        self::assertEquals($originalCode, "<?php\n" . $resultingCode);
+        self::assertEquals($this->reformatCode($originalCode), $resultingCode);
+    }
+
+    /**
+     * @return Generator<array{string}>
+     */
+    public function fixtureFiles(): Generator
+    {
+        foreach(glob(__DIR__ . '/Fixtures/*.php') as $file) {
+            yield [$file];
+        }
     }
 
     /**
@@ -83,7 +94,13 @@ EOD;
             [new Node\Scalar\String_('foo')],
             [new Node\Scalar\DNumber(0.12)],
             [new Node\Scalar\LNumber(123)],
-            [new Node\Expr\Assign(new Node\Expr\Variable('foo'), new Node\Scalar\String_('bar'))]
+            [new Node\Expr\Assign(new Node\Expr\Variable('foo'), new Node\Scalar\String_('bar'))],
+            [new Node\Expr\ConstFetch(new Node\Name('true'))]
         ];
+    }
+
+    private function reformatCode(string $code): string
+    {
+        return $this->prettyPrinter->prettyPrint($this->parser->parse($code));
     }
 }

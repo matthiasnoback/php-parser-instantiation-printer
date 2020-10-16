@@ -31,31 +31,31 @@ final class InstantiationPrinter
 
         $instantiationNodes = array_map(fn(Node\Stmt $stmt) => $this->createInstantiationNodeFor($stmt), $statements);
 
-        $wrappedInArray = $this->wrapNodesInArray($instantiationNodes);
-        $return = new Node\Stmt\Return_($wrappedInArray);
+        if (count($instantiationNodes) === 1) {
+            $return = $instantiationNodes[0];
+        } else {
+            $return = $this->wrapNodesInArray($instantiationNodes);
+        }
 
-        return $this->printNode($return);
+        return $this->print(new Node\Stmt\Return_($return));
     }
 
     public function printInstantiationNodeFor(Node $node): string
     {
-        return $this->printNode(
+        return $this->print(
             new Node\Stmt\Return_(
                 $this->createInstantiationNodeFor($node)
             )
         );
     }
 
-    public function printNode(Node $node): string
-    {
-        return $this->prettyPrinter->prettyPrint([$node]);
-    }
-
     /**
-     * @param array<Node> $nodes
+     * @param array<Node> | Node $nodeOrNodes
      */
-    public function printNodes(array $nodes): string
+    public function print($nodeOrNodes): string
     {
+        $nodes = is_array($nodeOrNodes) ? $nodeOrNodes : [$nodeOrNodes];
+
         return $this->prettyPrinter->prettyPrint($nodes);
     }
 

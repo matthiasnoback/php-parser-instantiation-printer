@@ -66,12 +66,12 @@ final class InstantiationPrinterTest extends TestCase
         }
 
         try {
-            $statements = eval($generatedCode);
+            $nodes = eval($generatedCode);
         } catch (Throwable $previous) {
             throw new RuntimeException('Could not execute the generated code: ' . $generatedCode, 0, $previous);
         }
 
-        $resultingCode = $this->prettyPrinter->prettyPrint($statements);
+        $resultingCode = $this->printer->print($nodes);
 
         self::assertEquals($this->reformatCode($originalCode), $resultingCode);
     }
@@ -83,7 +83,7 @@ final class InstantiationPrinterTest extends TestCase
     {
         $generatedCode = $this->printer->printInstantiationCodeFor('<?php "foo";');
         self::assertEquals(
-            "return array(new PhpParser\Node\Stmt\Expression(new PhpParser\Node\Scalar\String_('foo')));",
+            "return new PhpParser\Node\Stmt\Expression(new PhpParser\Node\Scalar\String_('foo'));",
             $generatedCode
         );
     }

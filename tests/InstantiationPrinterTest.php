@@ -89,6 +89,18 @@ final class InstantiationPrinterTest extends TestCase
     }
 
     /**
+     * @test
+     */
+    public function it_strips_unnecessary_sub_nodes(): void
+    {
+        $generatedCode = $this->printer->printInstantiationCodeFor('<?php class Simple {};');
+        self::assertEquals(
+            "return new PhpParser\Node\Stmt\Class_(new PhpParser\Node\Identifier('Simple'));",
+            $generatedCode
+        );
+    }
+
+    /**
      * @return Generator<array{string}>
      */
     public function fixtureFiles(): Generator

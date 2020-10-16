@@ -81,6 +81,11 @@ final class InstantiationPrinter
             $constructorParameters[$parameter->getName()] = $parameter;
         }
 
+        $subNodeNamesThatAreNotConstructorArgumentsAsWell = array_diff(
+            $node->getSubNodeNames(),
+            array_keys($constructorParameters)
+        );
+
         foreach ($constructorParameters as $parameter) {
             if ($parameter->getName() === 'subNodes') {
                 /*
@@ -89,9 +94,29 @@ final class InstantiationPrinter
                  * Now we need to invert the process so we create an associate array.
                  */
                 $value = [];
-                foreach ($node->getSubNodeNames() as $subNodeName) {
+                foreach ($subNodeNamesThatAreNotConstructorArgumentsAsWell as $subNodeName) {
                     $property = new ReflectionProperty(get_class($node), $subNodeName);
-                    $value[$subNodeName] = $property->getValue($node);
+
+                    $propertyValue = $property->getValue($node);
+
+                    /*
+                     * Node constructors do things like `$this->extends = $subNodes['extends'] ?? null;`
+                     * So if the value from the subNodes array is the same as the default value then we don't have to
+                     * explicitly set it as a key on the $subNodes constructor argument
+                     */
+                    if ($node instanceof Node\Stmt\Class_) {
+                        if (
+                            ($subNodeName === 'flags' && $propertyValue === 0)
+                            || ($subNodeName === 'extends' && $propertyValue === null)
+                            || ($subNodeName === 'implements' && $propertyValue === [])
+                            || ($subNodeName === 'stmts' && $propertyValue === [])
+                            || ($subNodeName === 'attrGroups' && $propertyValue === [])
+                        ) {
+                            continue;
+                        }
+                    }
+
+                    $value[$subNodeName] = $propertyValue;
                 }
             }
             elseif ($node instanceof Node\Name && $parameter->getName() === 'name') {

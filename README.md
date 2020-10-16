@@ -36,3 +36,16 @@ new PhpParser\Node\Stmt\Expression(
     )
 );
 ```
+
+## Usage
+
+After installing this library in your project, you'll have command-line tool that generates the nodes based on the provided PHP script:
+
+```bash
+bin/print-node-instantiation-code temp.php
+```
+
+(if you don't have a `bin/` directory in your project, try `vendor/bin`)
+
+You can also instantiate your own `InstantiationPrinter` service.
+Take a look at the code in the `print-node-instantiation-code` script to find out how to accomplish this.

@@ -72,6 +72,18 @@ final class InstantiationPrinterTest extends TestCase
     }
 
     /**
+     * @test
+     */
+    public function it_uses_default_arguments_where_possible(): void
+    {
+        $generatedCode = $this->printer->printInstantiationCodeFor('<?php "foo";');
+        self::assertEquals(
+            "return array(new PhpParser\Node\Stmt\Expression(new PhpParser\Node\Scalar\String_('foo')));",
+            $generatedCode
+        );
+    }
+
+    /**
      * @return Generator<array{string}>
      */
     public function fixtureFiles(): Generator

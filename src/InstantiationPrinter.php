@@ -75,7 +75,12 @@ final class InstantiationPrinter
 
         $arguments = [];
 
+        $constructorParameters = [];
         foreach ($reflection->getConstructor()->getParameters() as $parameter) {
+            $constructorParameters[$parameter->getName()] = $parameter;
+        }
+
+        foreach ($constructorParameters as $parameter) {
             if ($node instanceof Node\Name && $parameter->getName() === 'name') {
                 /*
                  * The $name parameter of the Name node is a string that will be split into parts, so we have to turn it
@@ -97,10 +102,26 @@ final class InstantiationPrinter
                 );
             }
 
-            $arguments[] = new Arg($this->createExpressionNodeForValue($value));
+            $arguments[$parameter->getName()] = $value;
         }
 
-        return $arguments;
+        // Remove arguments that are optional and that would be the same as the parameter's default value
+        foreach (array_reverse($arguments) as $parameterName => $argumentValue) {
+            $parameter = $constructorParameters[$parameterName];
+            if (!$parameter->isOptional() || !$parameter->isDefaultValueAvailable()) {
+                // stop trying
+                break;
+            }
+
+            if ($parameter->getDefaultValue() === $argumentValue) {
+                unset($arguments[$parameterName]);
+            }
+        }
+
+        return array_map(
+            fn($value) => new Arg($this->createExpressionNodeForValue($value)),
+            array_values($arguments)
+        );
     }
 
     private function createExpressionNodeForValue($value): Expr

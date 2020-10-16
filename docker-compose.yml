@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  php:
+    image: php:7.4-cli-alpine
+    volumes:
+      - ./:/opt/project
+    user: ${HOST_UID}:${HOST_GID}
+    working_dir: /opt/project
+    entrypoint: 'php'

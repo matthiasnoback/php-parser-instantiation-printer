@@ -1,4 +1,12 @@
 {
+    "name": "matthiasnoback/php-parser-instantiation-printer",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matthias Noback",
+            "email": "matthiasnoback@gmail.com"
+        }
+    ],
     "require": {
         "php": "^7.4",
         "nikic/php-parser": "^4.10"

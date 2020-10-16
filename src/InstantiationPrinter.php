@@ -11,6 +11,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 use ReflectionObject;
+use ReflectionProperty;
 use RuntimeException;
 
 final class InstantiationPrinter
@@ -81,7 +82,19 @@ final class InstantiationPrinter
         }
 
         foreach ($constructorParameters as $parameter) {
-            if ($node instanceof Node\Name && $parameter->getName() === 'name') {
+            if ($parameter->getName() === 'subNodes') {
+                /*
+                 * When instantiating a node, subNodes will be an associative array where each value will be copied to
+                 * a property that has the name of they key.
+                 * Now we need to invert the process so we create an associate array.
+                 */
+                $value = [];
+                foreach ($node->getSubNodeNames() as $subNodeName) {
+                    $property = new ReflectionProperty(get_class($node), $subNodeName);
+                    $value[$subNodeName] = $property->getValue($node);
+                }
+            }
+            elseif ($node instanceof Node\Name && $parameter->getName() === 'name') {
                 /*
                  * The $name parameter of the Name node is a string that will be split into parts, so we have to turn it
                  * into a string again:
@@ -98,7 +111,7 @@ final class InstantiationPrinter
             } else {
                 throw new RuntimeException(
                     'Could not come up with an argument for constructor parameter "' . $parameter->getName() . '"' .
-                    ' of class ' . $parameter->getClass()->getName()
+                    ' of class ' . get_class($node)
                 );
             }
 
@@ -106,16 +119,20 @@ final class InstantiationPrinter
         }
 
         // Remove arguments that are optional and that would be the same as the parameter's default value
-        foreach (array_reverse($arguments) as $parameterName => $argumentValue) {
+        foreach (array_reverse($arguments, true) as $parameterName => $argumentValue) {
             $parameter = $constructorParameters[$parameterName];
             if (!$parameter->isOptional() || !$parameter->isDefaultValueAvailable()) {
                 // stop trying
                 break;
             }
 
-            if ($parameter->getDefaultValue() === $argumentValue) {
-                unset($arguments[$parameterName]);
+            if ($parameter->getDefaultValue() !== $argumentValue) {
+                // stop trying as soon as we want to pass a specific argument that is not the default argument value
+                break;
             }
+
+            // It's safe to unset this argument; PHP will provide the default argument instead
+            unset($arguments[$parameterName]);
         }
 
         return array_map(

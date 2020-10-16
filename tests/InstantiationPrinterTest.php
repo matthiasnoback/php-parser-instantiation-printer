@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace InstantiationPrinter;
 
 use Generator;
+use PhpParser\Error;
 use PhpParser\Node;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
@@ -19,10 +20,10 @@ final class InstantiationPrinterTest extends TestCase
 
     protected function setUp(): void
     {
-        $parserFactory = new ParserFactory();
         $this->prettyPrinter = new Standard();
+        $parserFactory = new ParserFactory();
+        $this->parser = $parserFactory->create(ParserFactory::ONLY_PHP7);
 
-        $this->parser = $parserFactory->create(ParserFactory::PREFER_PHP7);
         $this->printer = new InstantiationPrinter(
             $this->parser,
             $this->prettyPrinter
@@ -58,7 +59,11 @@ final class InstantiationPrinterTest extends TestCase
     {
         $originalCode = file_get_contents($phpFile);
 
-        $generatedCode = $this->printer->printInstantiationCodeFor($originalCode);
+        try {
+            $generatedCode = $this->printer->printInstantiationCodeFor($originalCode);
+        } catch (Error $parseError) {
+            throw new RuntimeException('Could not parse fixture: ' . $originalCode, 0, $parseError);
+        }
 
         try {
             $statements = eval($generatedCode);

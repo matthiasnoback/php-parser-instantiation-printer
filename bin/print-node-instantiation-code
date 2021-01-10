@@ -13,18 +13,14 @@ function printNodeInstantiationCodeFor(string $code): void
     $parserFactory = new ParserFactory();
     $printer = new InstantiationPrinter(
         $parserFactory->create(ParserFactory::PREFER_PHP7),
-        new Standard()
+        new Standard(
+            [
+                'shortArraySyntax' => true
+            ]
+        )
     );
 
-    echo "Input:\n\n";
-
-    echo $code;
-
-    echo "\n";
-
-    echo "Output:\n\n";
-
-    echo $printer->printInstantiationCodeFor($code);
+    echo "<?php\n\n" . $printer->printInstantiationCodeFor($code);
 
     echo "\n\n";
 }
@@ -33,7 +29,10 @@ if (isset($argv[1]) && is_string($argv[1])) {
     $file = $argv[1];
 
     if (!is_file($file) || !is_readable($file)) {
-        throw new RuntimeException(sprintf('File "%s" is not a file or it is not readable', $file));
+        throw new RuntimeException(
+            sprintf(
+                'File "%s" is not a file or it is not readable',
+                $file));
     }
 
     $fileContents = file_get_contents($argv[1]);

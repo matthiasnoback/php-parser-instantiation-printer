@@ -20,7 +20,11 @@ final class InstantiationPrinterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->prettyPrinter = new Standard();
+        $this->prettyPrinter = new Standard(
+            [
+                'shortArraySyntax' => true
+            ]
+        );
         $parserFactory = new ParserFactory();
         $this->parser = $parserFactory->create(ParserFactory::ONLY_PHP7);
 

@@ -8,6 +8,8 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Scalar\String_;
+use PhpParser\Node\Stmt;
+use PhpParser\Node\Stmt\Return_;
 use PhpParser\Parser;
 use PhpParser\PrettyPrinter\Standard;
 use ReflectionObject;
@@ -29,7 +31,7 @@ final class InstantiationPrinter
     {
         $statements = $this->parser->parse($code);
 
-        $instantiationNodes = array_map(fn(Node\Stmt $stmt) => $this->createInstantiationNodeFor($stmt), $statements);
+        $instantiationNodes = array_map(fn(Stmt $stmt) => $this->createInstantiationNodeFor($stmt), $statements);
 
         if (count($instantiationNodes) === 1) {
             $return = $instantiationNodes[0];
@@ -37,13 +39,13 @@ final class InstantiationPrinter
             $return = $this->wrapNodesInArray($instantiationNodes);
         }
 
-        return $this->print(new Node\Stmt\Return_($return));
+        return $this->print(new Return_($return));
     }
 
     public function printInstantiationNodeFor(Node $node): string
     {
         return $this->print(
-            new Node\Stmt\Return_(
+            new Return_(
                 $this->createInstantiationNodeFor($node)
             )
         );

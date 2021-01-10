@@ -22,15 +22,7 @@ final class CommandLineToolTest extends TestCase
         $process->run();
 
         $expectedOutput = <<<'EOD'
-Input:
-
 <?php
-
-class Simple
-{
-}
-
-Output:
 
 return new PhpParser\Node\Stmt\Class_(new PhpParser\Node\Identifier('Simple'));
 

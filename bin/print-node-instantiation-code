@@ -20,15 +20,7 @@ function printNodeInstantiationCodeFor(string $code): void
         )
     );
 
-    echo "Input:\n\n";
-
-    echo $code;
-
-    echo "\n";
-
-    echo "Output:\n\n";
-
-    echo $printer->printInstantiationCodeFor($code);
+    echo "<?php\n\n" . $printer->printInstantiationCodeFor($code);
 
     echo "\n\n";
 }

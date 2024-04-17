@@ -6,6 +6,7 @@ namespace InstantiationPrinter;
 use Generator;
 use PhpParser\Error;
 use PhpParser\Node;
+use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use PhpParser\PrettyPrinter\Standard;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +17,7 @@ final class InstantiationPrinterTest extends TestCase
 {
     private InstantiationPrinter $printer;
     private Standard $prettyPrinter;
-    private $parser;
+    private Parser $parser;
 
     protected function setUp(): void
     {
@@ -26,7 +27,7 @@ final class InstantiationPrinterTest extends TestCase
             ]
         );
         $parserFactory = new ParserFactory();
-        $this->parser = $parserFactory->create(ParserFactory::ONLY_PHP7);
+        $this->parser = $parserFactory->createForHostVersion();
 
         $this->printer = new InstantiationPrinter(
             $this->parser,

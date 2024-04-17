@@ -17,7 +17,7 @@ jobs:
                     -
                         name: CLI tool
                         run: bin/print-node-instantiation-code tests/Fixtures/classes.php
-                php-versions: ['7.4', '8.0']
+                php-versions: ['8.2', '8.3']
 
         runs-on: ubuntu-latest
         name: ${{ matrix.actions.name }}

@@ -12,7 +12,7 @@ function printNodeInstantiationCodeFor(string $code): void
 {
     $parserFactory = new ParserFactory();
     $printer = new InstantiationPrinter(
-        $parserFactory->create(ParserFactory::PREFER_PHP7),
+        $parserFactory->createForHostVersion(),
         new Standard(
             [
                 'shortArraySyntax' => true

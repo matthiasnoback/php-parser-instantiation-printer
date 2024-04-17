@@ -39,7 +39,13 @@ new PhpParser\Node\Stmt\Expression(
 
 ## Usage
 
-After installing this library in your project, you'll have command-line tool that generates the nodes based on the provided PHP script:
+Install this library in your project:
+
+```bash
+composer require --dev matthiasnoback/php-parser-instantiation-printer
+```
+
+You'll have command-line tool now, that generates the nodes based on the provided PHP script:
 
 ```bash
 bin/print-node-instantiation-code temp.php
